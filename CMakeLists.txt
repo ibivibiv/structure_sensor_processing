@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(owi_arm)
+project(structure_sensor_processing)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -52,15 +52,15 @@ catkin_python_setup()
 
 ## Generate services in the 'srv' folder
 #DIRECTORY srv
-add_service_files(
-  FILES 
-)
+#add_service_files(
+#  FILES 
+#)
 
 
 ## Generate actions in the 'action' folder
-add_action_files(
-  FILES
-)
+#add_action_files(
+#  FILES
+#)
 
 # Generate added messages and services with any dependencies listed here
 generate_messages(  DEPENDENCIES

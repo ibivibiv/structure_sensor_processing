@@ -37,14 +37,30 @@ class ProcessDepth:
         if( latest_image is not None ):
             try:
                 # convert the image to SimpleCV
+                # The input image is single channel float and we want rgb uint8
+                # it is also full of nasty nans. We get the min and max and scale
+                # the image from [0,flt_max] to [0,255]
                 dmin = np.nanmin(latest_image)
                 dmax = np.nanmax(latest_image)
                 latest_image = latest_image - dmin
                 sf = 255.0/(dmax-dmin)
                 latest_image = sf*latest_image
+                # Convert to uint8
                 temp = latest_image.astype(np.uint8)
+                # move to SimpleCV RGB
                 img = scv.Image(temp, cv2image=True, colorSpace=scv.ColorSpace.RGB)
-                img = img.threshold(128)
+                # get values less than 128
+                lt = img.threshold(128).invert()
+                # get values greater than 64
+                gt = img.threshold(64) 
+                # do the logical and of the two depths
+                range = lt*gt
+                # apply the mask to the input image
+                blobs = img.findBlobsFromMask(mask=range)
+                # draw the results. 
+                if( blobs ):
+                    blobs.draw(color=scv.Color.RED,width=-1)
+                img = img.applyLayers()
                 # convert SimpleCV to CV2 Numpy Format
                 cv2img = img.getNumpyCv2()
                 # Convert Cv2 numpy to ROS format
@@ -52,7 +68,7 @@ class ProcessDepth:
                 # publish the topic.
                 self.pub.publish(self.bridge.cv2_to_imgmsg(cv2img, "bgr8"))
             except CvBridgeError, e:
-                print e
+                rospy.logwarn("PROCESSING EXCEPTION {0}".format(e))
 
 # Boilerplate node spin up. 
 if __name__ == '__main__':
